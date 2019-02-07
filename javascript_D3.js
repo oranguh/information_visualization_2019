@@ -28,9 +28,9 @@ function redraw(){
   width = (window.innerWidth - 30) - margins.left - margins.right
   height = (window.innerHeight - 30) - margins.top - margins.bottom;
 
-  console.log(years[Math.abs(year_int)])
-  if (display_data[Math.abs(year_int)]){
-    data = display_data[Math.abs(year_int)]["months"]
+  console.log(years[year_int])
+  if (display_data[year_int]){
+    data = display_data[year_int]["months"]
   }
   console.log(data)
   console.log(display_data)
@@ -50,7 +50,6 @@ d3.select("body").select("svg")
   .attr("height", Math.round(height + margins.top + margins.bottom))
 .append("g")
   .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
-
 
 d3.select("body").select("svg").select("g")
   .selectAll("text")
@@ -72,7 +71,8 @@ d3.select("body").select("svg").select("g")
     if (i === year_int) {
       return "red"
     } else {
-      return "blue"}});
+      return "blue"
+    }});
 
 d3.select("body").select("svg").select("g")
   .selectAll(".year_labels")
@@ -84,7 +84,7 @@ d3.select("body").select("svg").select("g")
       return "blue"}});
 
     var xScale = d3.scaleLinear()
-        .domain([0, data.length-1])
+        .domain([0, data.length])
         .range([0, width]);
 
     d3.select("svg").select("g").append("g")
@@ -197,15 +197,14 @@ function load_csv_data(){
       // console.log(display_data[display_data.length -1])
     }
 
-    for (year_int in display_data){
-      for (month_int in display_data[year_int]["months"]){
-        // console.log(display_data[year_int]["months"][month_int]);
+    for (year_indicator in display_data){
+      for (month_int in display_data[year_indicator]["months"]){
         var total = 0;
-        for(var i = 0; i < display_data[year_int]["months"][month_int]["all_temp"].length; i++) {
-            total += Number(display_data[year_int]["months"][month_int]["all_temp"][i]);
+        for(var i = 0; i < display_data[year_indicator]["months"][month_int]["all_temp"].length; i++) {
+            total += Number(display_data[year_indicator]["months"][month_int]["all_temp"][i]);
         }
-        var avg = total / display_data[year_int]["months"][month_int]["all_temp"].length;
-        display_data[year_int]["months"][month_int]["avg"] = avg
+        var avg = total / display_data[year_indicator]["months"][month_int]["all_temp"].length;
+        display_data[year_indicator]["months"][month_int]["avg"] = avg
       }
     }
     // console.log(display_data)
