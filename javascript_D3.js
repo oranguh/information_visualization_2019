@@ -11,15 +11,20 @@ var barwidth = (width / 12)
 load_csv_data()
 
 
+function initialized(){
 
-window.onload = redraw()
+  window.onload = redraw()
 
+}
+// from https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
+window.onkeydown = checkKey;
 window.onresize = redraw()
+
 function redraw(){
   width = (window.innerWidth);
   height = (window.innerHeight - 80);
 
-  console.log(Math.abs(year_int))
+  console.log(years[Math.abs(year_int)])
   if (display_data[Math.abs(year_int)]){
     data = display_data[Math.abs(year_int)]["months"]
   }
@@ -35,50 +40,78 @@ function redraw(){
 //   initialized = true
 // }
 // console.log(initialized)
+
+d3.select("body").select("svg")
+  .selectAll("text")
+  .data(years)
+  .enter()
+  .append("text")
+  .transition()
+  .attr("class", "year_labels")
+  .attr("font-family", "sans-serif")
+  .attr("font-size", "15px")
+  .attr("font-weight", "bold")
+  .text(function(d){
+    return (d)})
+  .attr("x", function(d, i){
+    return 50*i
+  })
+  .attr("y", 50)
+  .attr("fill", function(d, i){
+    if (i === year_int) {
+      return "red"
+    } else {
+      return "blue"}});
+
+d3.select("body").select("svg")
+  .selectAll(".year_labels")
+  .transition()
+  .attr("fill", function(d, i){
+    if (i === year_int) {
+      return "red"
+    } else {
+      return "blue"}});
+
   d3.select("body").select("svg")
     .transition()
     .attr("class", "svgContainer")
-    .attr("width", width - 50)
-    .attr("height", height);
+    .attr("width", Math.round(width - 50))
+    .attr("height", Math.round(height));
 
-barwidth = (width / data.length)
+barwidth = Math.round(width / data.length)
 
   d3.select("svg")
     .selectAll("rect")
     .data(data)
     .enter()
     .append("rect")
+    .attr("class", "bar")
     .attr("y", function(d){
-      return height - d["avg"]})
+      return Math.round(height - d["avg"])})
     .attr("height", function(d){
-      return d["avg"]})
+      return Math.round(d["avg"])})
     .attr("width", function(d){
       return barwidth})
     .attr("x", function(d, n){
-      return n * barwidth})
-    .attr("fill", "blue");
+      return Math.round(n * barwidth)})
 
   d3.select("svg")
-    .selectAll("rect")
+    .selectAll(".bar")
     .data(data)
     .transition()
     .attr("y", function(d){
-      return height - d["avg"]})
+      return Math.round(height - d["avg"])})
     .attr("height", function(d){
-      return d["avg"]})
+      return Math.round(d["avg"])})
     .attr("width", function(d){
       return barwidth})
     .attr("x", function(d, n){
-      return n * barwidth})
+      return Math.round(n * barwidth)})
     .attr("fill", "blue");
     // .text(function(d){
     //   return d["month"] + "    " + d["avg"]});
 
 }
-
-// from https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
-window.onkeydown = checkKey;
-
 
 function checkKey(e) {
 // from https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
@@ -92,6 +125,9 @@ function checkKey(e) {
     }
     else if (e.keyCode == '37') {
       year_int = (year_int-1)%5
+      if (year_int === -1){
+        year_int = 4
+      }
       var data = display_data[year_int]
       redraw()
        // left arrow
@@ -140,5 +176,6 @@ function load_csv_data(){
       }
     }
     // console.log(display_data)
+    initialized()
   });
 }
