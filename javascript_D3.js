@@ -1,8 +1,12 @@
 var year_int = 0
 var years = []
 var display_data = []
-var width = (window.innerWidth);
-var height = (window.innerHeight - 80);
+
+var margins = {"right": 50, "left":50, "bottom": 50, "top": 50};
+
+var width = (window.innerWidth - 30) - (margins.left + margins.right);
+var height = (window.innerHeight - 30) -(margins.top + margins.bottom);
+
 var data = []
 var csv_path = "https://oranguh.github.io/information_visualization_2019/meteo.csv"
 var csv_path = "meteo.csv"
@@ -21,8 +25,8 @@ window.onkeydown = checkKey;
 window.onresize = redraw()
 
 function redraw(){
-  width = (window.innerWidth);
-  height = (window.innerHeight - 80);
+  width = (window.innerWidth - 30) - margins.left - margins.right
+  height = (window.innerHeight - 30) - margins.top - margins.bottom;
 
   console.log(years[Math.abs(year_int)])
   if (display_data[Math.abs(year_int)]){
@@ -40,8 +44,15 @@ function redraw(){
 //   initialized = true
 // }
 // console.log(initialized)
-
 d3.select("body").select("svg")
+  .attr("class", "svgContainer")
+  .attr("width", Math.round(width + margins.left + margins.right))
+  .attr("height", Math.round(height + margins.top + margins.bottom))
+.append("g")
+  .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+
+
+d3.select("body").select("svg").select("g")
   .selectAll("text")
   .data(years)
   .enter()
@@ -54,7 +65,7 @@ d3.select("body").select("svg")
   .text(function(d){
     return (d)})
   .attr("x", function(d, i){
-    return 50*i
+    return 50*i + 100
   })
   .attr("y", 50)
   .attr("fill", function(d, i){
@@ -63,7 +74,7 @@ d3.select("body").select("svg")
     } else {
       return "blue"}});
 
-d3.select("body").select("svg")
+d3.select("body").select("svg").select("g")
   .selectAll(".year_labels")
   .transition()
   .attr("fill", function(d, i){
@@ -72,15 +83,37 @@ d3.select("body").select("svg")
     } else {
       return "blue"}});
 
-  d3.select("body").select("svg")
-    .transition()
-    .attr("class", "svgContainer")
-    .attr("width", Math.round(width - 50))
-    .attr("height", Math.round(height));
+    var xScale = d3.scaleLinear()
+        .domain([0, data.length-1])
+        .range([0, width]);
 
-barwidth = Math.round(width / data.length)
+    d3.select("svg").select("g").append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + (height) + ")")
+        .call(d3.axisBottom(xScale));
 
-  d3.select("svg")
+    // var xs = d3.scaleOrdinal()
+    //     .range([0, width])
+        // .attr("transform", "translate(0," + height + ")");
+
+    var ys = d3.scaleLinear()
+        .domain([250, 0])
+        .range([0, height]);
+
+    // make them axes
+
+      // .call(d3.axisBottom(xs));
+
+    // d3.select("svg")
+    //     .call(d3.axisLeft(ys))
+
+
+
+
+
+barwidth = Math.round(width / data.length )
+console.log(data.length)
+  d3.select("svg").select("g")
     .selectAll("rect")
     .data(data)
     .enter()
@@ -95,7 +128,7 @@ barwidth = Math.round(width / data.length)
     .attr("x", function(d, n){
       return Math.round(n * barwidth)})
 
-  d3.select("svg")
+  d3.select("svg").select("g")
     .selectAll(".bar")
     .data(data)
     .transition()
