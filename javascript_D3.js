@@ -14,7 +14,6 @@ var barwidth = (width / 12)
 // var initialized = false
 load_csv_data()
 
-
 function initialized(){
 
   window.onload = redraw()
@@ -83,18 +82,17 @@ d3.select("body").select("svg").select("g")
     } else {
       return "blue"}});
 
-    var xScale = d3.scaleLinear()
-        .domain([0, data.length])
-        .range([0, width]);
+      // just implement this >.> https://bl.ocks.org/d3indepth/fabe4d1adbf658c0b73c74d3ea36d465
+    var xScale = d3.scaleOrdinal()
+        .range(linspace(0, width, data.length))
+        .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
 
     d3.select("svg").select("g").append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + (height) + ")")
-        .call(d3.axisBottom(xScale));
+        .attr("transform", "translate(50," + (height) + ")")
+        .call(d3.axisBottom(xScale))
 
-    // var xs = d3.scaleOrdinal()
-    //     .range([0, width])
-        // .attr("transform", "translate(0," + height + ")");
+
 
     var ys = d3.scaleLinear()
         .domain([250, 0])
@@ -211,3 +209,9 @@ function load_csv_data(){
     initialized()
   });
 }
+
+function linspace(start, stop, num_samples) {
+  // https://calebmadrigal.com/simple-d3-demos/
+  return d3.range(start, stop * (num_samples / (stop-start)))
+    .map(function (n) { return n / (num_samples / (stop-start)); });
+};
