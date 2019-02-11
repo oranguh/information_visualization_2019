@@ -1,14 +1,15 @@
 var year_int = 0
 var years = []
 var display_data = []
-
+var uninitialized = true
 var margins = {"right": 50, "left":50, "bottom": 50, "top": 50};
 
 var width = (window.innerWidth - 30) - (margins.left + margins.right);
 var height = (window.innerHeight - 30) -(margins.top + margins.bottom);
 
+var bloop = 0
 var data = []
-var csv_path = "https://oranguh.github.io/information_visualization_2019/meteo.csv"
+// var csv_path = "https://oranguh.github.io/information_visualization_2019/meteo.csv"
 var csv_path = "meteo.csv"
 var barwidth = (width / 12)
 // var initialized = false
@@ -27,27 +28,19 @@ function redraw(){
   width = (window.innerWidth - 30) - margins.left - margins.right
   height = (window.innerHeight - 30) - margins.top - margins.bottom;
 
-  console.log(years[year_int])
+  // console.log(years[year_int])
   if (display_data[year_int]){
     data = display_data[year_int]["months"]
+    max_avg = d3.max(data.map(x => x["avg"]))
+    console.log(max_avg)
   }
-  console.log(data)
-  console.log(display_data)
-// console.log(initialized)
-// if (!initialized){
-//   d3.select("body").append("svg")
-//     .attr("class", "svgContainer")
-//     .attr("width", width - 50)
-//     .attr("height", height);
-//
-//   initialized = true
-// }
-// console.log(initialized)
+
+
 d3.select("body").select("svg")
   .attr("class", "svgContainer")
   .attr("width", Math.round(width + margins.left + margins.right))
   .attr("height", Math.round(height + margins.top + margins.bottom))
-.append("g")
+.select("g")
   .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
 d3.select("body").select("svg").select("g")
@@ -55,19 +48,15 @@ d3.select("body").select("svg").select("g")
   .data(years)
   .enter()
   .append("text")
-  .transition()
   .attr("class", "year_labels")
-  .attr("font-family", "sans-serif")
-  .attr("font-size", "15px")
-  .attr("font-weight", "bold")
   .text(function(d){
     return (d)})
-  .attr("x", function(d, i){
-    return 50*i + 100
+  .attr("x", function(d, n){
+    return 50*n + 100
   })
   .attr("y", 50)
-  .attr("fill", function(d, i){
-    if (i === year_int) {
+  .attr("fill", function(d, n){
+    if (n === year_int) {
       return "red"
     } else {
       return "blue"
@@ -86,31 +75,41 @@ d3.select("body").select("svg").select("g")
     var xScale = d3.scaleOrdinal()
         .range(linspace(0, width, data.length))
         .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+    var yScale = d3.scaleLinear()
+        .domain([0, 20])
+        .range([height, 0]);
+
+if (bloop < 2){
+
+    d3.select("body").select("svg").select("g")
+        .append("text")
+        .text("Schiphol Airport Temperatures")
+        .attr("x", 100)
 
     d3.select("svg").select("g").append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(50," + (height) + ")")
+        .attr("class", "x_axis")
+        .attr("transform", "translate(0," + (height) + ")")
         .call(d3.axisBottom(xScale))
 
+    d3.select("svg").select("g").append("g")
+        .attr("class", "y_axis")
+        .attr("transform", "translate(0, 0)")
+        .call(d3.axisLeft(yScale))
 
+} else {
+  d3.select("svg").select("g").select(".x_axis")
+      .transition()
+      .attr("transform", "translate(0," + (height) + ")")
+      .call(d3.axisBottom(xScale))
 
-    var ys = d3.scaleLinear()
-        .domain([250, 0])
-        .range([0, height]);
-
-    // make them axes
-
-      // .call(d3.axisBottom(xs));
-
-    // d3.select("svg")
-    //     .call(d3.axisLeft(ys))
-
-
-
+  d3.select("svg").select("g").select(".y_axis")
+      .transition()
+      .attr("transform", "translate(0 , 0)")
+      .call(d3.axisLeft(yScale))
+}
 
 
 barwidth = Math.round(width / data.length )
-console.log(data.length)
   d3.select("svg").select("g")
     .selectAll("rect")
     .data(data)
@@ -118,31 +117,58 @@ console.log(data.length)
     .append("rect")
     .attr("class", "bar")
     .attr("y", function(d){
-      return Math.round(height - d["avg"])})
+      return Math.round(height - height*d["avg"]/max_avg)})
     .attr("height", function(d){
-      return Math.round(d["avg"])})
+      return Math.round(height*d["avg"]/max_avg)})
     .attr("width", function(d){
       return barwidth})
     .attr("x", function(d, n){
-      return Math.round(n * barwidth)})
+      return Math.round(n * barwidth)});
 
   d3.select("svg").select("g")
     .selectAll(".bar")
     .data(data)
     .transition()
     .attr("y", function(d){
-      return Math.round(height - d["avg"])})
+      return Math.round(height - height*d["avg"]/max_avg)})
     .attr("height", function(d){
-      return Math.round(d["avg"])})
+      return Math.round(height*d["avg"]/max_avg)})
     .attr("width", function(d){
       return barwidth})
     .attr("x", function(d, n){
       return Math.round(n * barwidth)})
-    .attr("fill", "blue");
-    // .text(function(d){
-    //   return d["month"] + "    " + d["avg"]});
 
+if (bloop < 2){
+    d3.select("body").select(".svgContainer").select("g")
+      .selectAll("text2")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("class", "month_labels")
+      .text(function(d){
+        return String(d["avg"]*0.1).substring(0,4)})
+      .attr("y", function(d){
+          return Math.round(height - height*d["avg"]/max_avg)})
+      .attr("x", function(d, n){
+          return Math.round(n * barwidth + barwidth/3)})
 }
+
+else {
+  d3.select("body").select(".svgContainer").select("g")
+    .selectAll(".month_labels")
+    .data(data)
+    .transition()
+    .attr("y", function(d){
+        return Math.round(height - height*d["avg"]/max_avg)})
+    .attr("x", function(d, n){
+        return Math.round(n * barwidth + barwidth/3)})
+    .text(function(d){
+      return String(d["avg"]*0.1).substring(0,4)})
+}
+    bloop += 1
+}
+
+
 
 function checkKey(e) {
 // from https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript

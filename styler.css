@@ -6,7 +6,11 @@
 .bar:hover {
   fill: brown;
 }
-
+.year_labels {
+  font-family: sans-serif;
+  font-size: 15px;
+  font-weight: bold;
+}
 .texto {
   font-family: sans-serif;
   font-size: 15px;
