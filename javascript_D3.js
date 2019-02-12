@@ -3,6 +3,7 @@ var years = []
 var display_data = []
 var uninitialized = true
 var margins = {"right": 50, "left":50, "bottom": 50, "top": 50};
+var max_temp = 20
 
 var width = (window.innerWidth - 30) - (margins.left + margins.right);
 var height = (window.innerHeight - 30) -(margins.top + margins.bottom);
@@ -32,7 +33,6 @@ function redraw(){
   if (display_data[year_int]){
     data = display_data[year_int]["months"]
     max_avg = d3.max(data.map(x => x["avg"]))
-    console.log(max_avg)
   }
 
 
@@ -76,8 +76,9 @@ d3.select("body").select("svg").select("g")
         .range(linspace(0, width, data.length))
         .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
     var yScale = d3.scaleLinear()
-        .domain([0, 20])
-        .range([height, 0]);
+        .domain([0, max_temp])
+        .range([height, 0])
+        // .ticks(20, "s");
 
 if (bloop < 2){
 
@@ -94,7 +95,8 @@ if (bloop < 2){
     d3.select("svg").select("g").append("g")
         .attr("class", "y_axis")
         .attr("transform", "translate(0, 0)")
-        .call(d3.axisLeft(yScale))
+        .call(d3.axisLeft(yScale).ticks(20, "s"))
+
 
 } else {
   d3.select("svg").select("g").select(".x_axis")
@@ -105,7 +107,7 @@ if (bloop < 2){
   d3.select("svg").select("g").select(".y_axis")
       .transition()
       .attr("transform", "translate(0 , 0)")
-      .call(d3.axisLeft(yScale))
+      .call(d3.axisLeft(yScale).ticks(20, "s"))
 }
 
 
@@ -117,26 +119,37 @@ barwidth = Math.round(width / data.length )
     .append("rect")
     .attr("class", "bar")
     .attr("y", function(d){
-      return Math.round(height - height*d["avg"]/max_avg)})
+      return Math.round(height - height*(d["avg"]/(max_temp*10)))})
     .attr("height", function(d){
-      return Math.round(height*d["avg"]/max_avg)})
+      return Math.round(height*(d["avg"]/(max_temp*10)))})
     .attr("width", function(d){
       return barwidth})
     .attr("x", function(d, n){
-      return Math.round(n * barwidth)});
+      return Math.round(n * barwidth)})
+    .attr("fill", function(d) {
+  return "rgb(0, 0, " + (d["avg"]/(max_temp*10)*255) + ")"});
+
 
   d3.select("svg").select("g")
     .selectAll(".bar")
     .data(data)
     .transition()
     .attr("y", function(d){
-      return Math.round(height - height*d["avg"]/max_avg)})
+      return Math.round(height - height*d["avg"]/(max_temp*10))})
     .attr("height", function(d){
-      return Math.round(height*d["avg"]/max_avg)})
+      return Math.round(height*d["avg"]/(max_temp*10))})
     .attr("width", function(d){
       return barwidth})
     .attr("x", function(d, n){
       return Math.round(n * barwidth)})
+    .attr("fill", function(d) {
+      if (d["avg"]/(max_temp*10) > 0.5){
+        return "rgb(" + (d["avg"]/(max_temp*10)*255) + ", 0, " + ((1 - d["avg"]/(max_temp*10)) * 255) + ")"
+      } else {
+        return "rgb(" + (d["avg"]/(max_temp*10)*255) + ", 0, " + ((1 - d["avg"]/(max_temp*10)) * 255) + ")"
+      }
+      });
+
 
 if (bloop < 2){
     d3.select("body").select(".svgContainer").select("g")
@@ -148,7 +161,7 @@ if (bloop < 2){
       .text(function(d){
         return String(d["avg"]*0.1).substring(0,4)})
       .attr("y", function(d){
-          return Math.round(height - height*d["avg"]/max_avg)})
+          return Math.round(height - height*d["avg"]/(max_temp*10))})
       .attr("x", function(d, n){
           return Math.round(n * barwidth + barwidth/3)})
 }
@@ -159,7 +172,7 @@ else {
     .data(data)
     .transition()
     .attr("y", function(d){
-        return Math.round(height - height*d["avg"]/max_avg)})
+        return Math.round(height - height*d["avg"]/(max_temp*10))})
     .attr("x", function(d, n){
         return Math.round(n * barwidth + barwidth/3)})
     .text(function(d){
