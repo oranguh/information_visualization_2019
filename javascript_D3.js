@@ -1,14 +1,14 @@
 var year_int = 0
 var years = []
 var display_data = []
-var uninitialized = true
+
 var margins = {"right": 50, "left":50, "bottom": 50, "top": 50};
 var max_temp = 20
 
 var width = (window.innerWidth - 30) - (margins.left + margins.right);
 var height = (window.innerHeight - 30) -(margins.top + margins.bottom);
 
-var bloop = 0
+
 var data = []
 // var csv_path = "https://oranguh.github.io/information_visualization_2019/meteo.csv"
 var csv_path = "meteo.csv"
@@ -18,8 +18,46 @@ load_csv_data()
 
 function initialized(){
 
-  window.onload = redraw()
+// initialize all the elements for later.
 
+  d3.select("body").append("svg")
+    .attr("class", "svgContainer")
+    .attr("width", Math.round(width + margins.left + margins.right))
+    .attr("height", Math.round(height + margins.top + margins.bottom))
+  .append("g")
+    .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+
+    // just implement this >.> https://bl.ocks.org/d3indepth/fabe4d1adbf658c0b73c74d3ea36d465
+  // var xScale = d3.scaleOrdinal()
+  //     .range(linspace(0, width, data.length))
+  //     .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+      // .padding(5)
+
+  var xband = d3.scaleBand()
+      .range([0, width])
+      .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+
+  var yScale = d3.scaleLinear()
+      .domain([0, max_temp])
+      .range([height, 0])
+
+  d3.select("body").select("svg").select("g")
+      .append("text")
+      .text("Schiphol Airport Temperature Marco Heuvelman 10176306")
+      .attr("x", 100)
+      .attr("class", "title_thing")
+
+  d3.select("svg").select("g").append("g")
+      .attr("class", "x_axis")
+      .attr("transform", "translate(0," + (height) + ")")
+      .call(d3.axisBottom(xband))
+
+  d3.select("svg").select("g").append("g")
+      .attr("class", "y_axis")
+      .attr("transform", "translate(0, 0)")
+      .call(d3.axisLeft(yScale).ticks(20, "s"))
+
+  window.onload = redraw()
 }
 // from https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
 window.onkeydown = checkKey;
@@ -30,11 +68,18 @@ function redraw(){
   height = (window.innerHeight - 30) - margins.top - margins.bottom;
 
   // console.log(years[year_int])
-  if (display_data[year_int]){
-    data = display_data[year_int]["months"]
-    max_avg = d3.max(data.map(x => x["avg"]))
+
+  data = display_data[year_int]["months"]
+  max_avg = d3.max(data.map(x => x["avg"]))
     // max_temp = max_avg * 0.1
-  }
+
+  xband = d3.scaleBand()
+      .range([0, width])
+      .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+
+  yScale = d3.scaleLinear()
+      .domain([0, max_temp])
+      .range([height, 0])
 
 
   d3.select("body").select("svg")
@@ -45,7 +90,7 @@ function redraw(){
     .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
   d3.select("body").select("svg").select("g")
-    .selectAll("text")
+    .selectAll(".year_labels")
     .data(years)
     .enter()
     .append("text")
@@ -53,8 +98,7 @@ function redraw(){
     .text(function(d){
       return (d)})
     .attr("x", function(d, n){
-      return 50*n + 100
-    })
+      return 60*n + 100 })
     .attr("y", 50)
     .attr("fill", function(d, n){
       if (n === year_int) {
@@ -80,55 +124,20 @@ function redraw(){
       } else {
         return "blue"}});
 
-        // just implement this >.> https://bl.ocks.org/d3indepth/fabe4d1adbf658c0b73c74d3ea36d465
-      var xScale = d3.scaleOrdinal()
-          .range(linspace(0, width, data.length))
-          .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
-          // .padding(5)
-      var xband = d3.scaleBand()
-          .range([0, width])
-          .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
-
-
-      var yScale = d3.scaleLinear()
-          .domain([0, max_temp])
-          .range([height, 0])
-          // .ticks(20, "s");
-
-  if (bloop < 1){
-
-      d3.select("body").select("svg").select("g")
-          .append("text")
-          .text("Schiphol Airport Temperature Marco Heuvelman 10176306")
-          .attr("x", 100)
-
-      d3.select("svg").select("g").append("g")
-          .attr("class", "x_axis")
-          .attr("transform", "translate(0," + (height) + ")")
-          .call(d3.axisBottom(xband))
-
-      d3.select("svg").select("g").append("g")
-          .attr("class", "y_axis")
-          .attr("transform", "translate(0, 0)")
-          .call(d3.axisLeft(yScale).ticks(20, "s"))
-
-
-  } else {
     d3.select("svg").select("g").select(".x_axis")
         .transition()
         .attr("transform", "translate(0," + (height) + ")")
-        .call(d3.axisBottom(xband))
+        .call(d3.axisBottom(xband.range([0, width])))
 
     d3.select("svg").select("g").select(".y_axis")
         .transition()
         .attr("transform", "translate(0 , 0)")
         .call(d3.axisLeft(yScale).ticks(20, "s"))
-  }
 
+  barwidth = Math.round(width / data.length)
 
-  barwidth = Math.round(width / data.length )
     d3.select("svg").select("g")
-      .selectAll("rect")
+      .selectAll(".bar")
       .data(data)
       .enter()
       .append("rect")
@@ -142,8 +151,8 @@ function redraw(){
       .attr("x", function(d, n){
         return Math.round(n * barwidth)})
       .attr("fill", function(d) {
-    return "rgb(0, 0, " + (d["avg"]/(max_temp*10)*255) + ")"});
-
+        return "rgb(" + (d["avg"]/(max_temp*10)*255) + ", 0, " + ((1 - d["avg"]/(max_temp*10)) * 255) + ")"
+      });
 
     d3.select("svg").select("g")
       .selectAll(".bar")
@@ -158,30 +167,22 @@ function redraw(){
       .attr("x", function(d, n){
         return Math.round(n * barwidth)})
       .attr("fill", function(d) {
-        if (d["avg"]/(max_temp*10) > 0.5){
-          return "rgb(" + (d["avg"]/(max_temp*10)*255) + ", 0, " + ((1 - d["avg"]/(max_temp*10)) * 255) + ")"
-        } else {
-          return "rgb(" + (d["avg"]/(max_temp*10)*255) + ", 0, " + ((1 - d["avg"]/(max_temp*10)) * 255) + ")"
-        }
-        });
+        return "rgb(" + (d["avg"]/(max_temp*10)*255) + ", 0, " + ((1 - d["avg"]/(max_temp*10)) * 255) + ")"
+      });
 
+    d3.select("body").select(".svgContainer").select("g")
+      .selectAll(".month_labels")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("class", "month_labels")
+      .text(function(d){
+        return String(d["avg"]*0.1).substring(0,4)})
+      .attr("y", function(d){
+          return Math.round(height - height*d["avg"]/(max_temp*10))})
+      .attr("x", function(d, n){
+          return Math.round(n * barwidth + barwidth/3)})
 
-  if (bloop < 1){
-      d3.select("body").select(".svgContainer").select("g")
-        .selectAll("text2")
-        .data(data)
-        .enter()
-        .append("text")
-        .attr("class", "month_labels")
-        .text(function(d){
-          return String(d["avg"]*0.1).substring(0,4)})
-        .attr("y", function(d){
-            return Math.round(height - height*d["avg"]/(max_temp*10))})
-        .attr("x", function(d, n){
-            return Math.round(n * barwidth + barwidth/3)})
-  }
-
-  else {
     d3.select("body").select(".svgContainer").select("g")
       .selectAll(".month_labels")
       .data(data)
@@ -192,8 +193,7 @@ function redraw(){
           return Math.round(n * barwidth + barwidth/3)})
       .text(function(d){
         return String(d["avg"]*0.1).substring(0,4)})
-  }
-      bloop += 1
+
 }
 
 
