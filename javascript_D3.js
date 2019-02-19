@@ -10,10 +10,8 @@ var height = (window.innerHeight - 30) -(margins.top + margins.bottom);
 
 
 var data = []
-// var csv_path = "https://oranguh.github.io/information_visualization_2019/meteo.csv"
 var csv_path = "meteo.csv"
 var barwidth = (width / 12)
-// var initialized = false
 load_csv_data()
 
 function initialized(){
@@ -27,11 +25,7 @@ function initialized(){
   .append("g")
     .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
-    // just implement this >.> https://bl.ocks.org/d3indepth/fabe4d1adbf658c0b73c74d3ea36d465
-  // var xScale = d3.scaleOrdinal()
-  //     .range(linspace(0, width, data.length))
-  //     .domain(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
-      // .padding(5)
+    // inspired from >.> https://bl.ocks.org/d3indepth/fabe4d1adbf658c0b73c74d3ea36d465
 
   var xband = d3.scaleBand()
       .range([0, width])
@@ -61,13 +55,12 @@ function initialized(){
 }
 // from https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
 window.onkeydown = checkKey;
-// window.onresize = redraw()
+window.addEventListener("resize", redraw);
 
 function redraw(){
   width = (window.innerWidth - 30) - margins.left - margins.right
   height = (window.innerHeight - 30) - margins.top - margins.bottom;
 
-  // console.log(years[year_int])
 
   data = display_data[year_int]["months"]
   max_avg = d3.max(data.map(x => x["avg"]))
