@@ -265,9 +265,3 @@ function load_csv_data(){
     initialized()
   });
 }
-
-function linspace(start, stop, num_samples) {
-  // https://calebmadrigal.com/simple-d3-demos/
-  return d3.range(start, stop * (num_samples / (stop-start)))
-    .map(function (n) { return n / (num_samples / (stop-start)); });
-};
